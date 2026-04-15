@@ -1,0 +1,42 @@
+[
+  {
+    "name": "python-insider",
+    "transport": "rss",
+    "url": "https://example.com/python-insider.xml",
+    "bucket": "software-engineering",
+    "enabled": true,
+    "required_for_daily_run": true,
+    "failure_policy": "fail",
+    "max_items_per_source": 10
+  },
+  {
+    "name": "google-online-security-blog",
+    "transport": "rss",
+    "url": "https://example.com/google-online-security.xml",
+    "bucket": "security",
+    "enabled": true,
+    "required_for_daily_run": true,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
+    "name": "google-threat-intelligence",
+    "transport": "rss",
+    "url": "https://example.com/google-threat-intelligence.xml",
+    "bucket": "ai-for-security",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 5
+  },
+  {
+    "name": "openai-news",
+    "transport": "rss",
+    "url": "https://example.com/openai-news.xml",
+    "bucket": "security-for-ai",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 5
+  }
+]

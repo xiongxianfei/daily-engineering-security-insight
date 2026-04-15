@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "daily-engineering-security-insight"
+version = "0.1.0"
+description = "Daily engineering and security insight workflow for a dedicated Codex machine."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "jsonschema>=4.22.0",
+  "pydantic>=2.9.0",
+  "typer>=0.12.5",
+]
+
+[project.scripts]
+daily-insight = "daily_insight.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "ruff>=0.8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["daily_insight"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I"]
