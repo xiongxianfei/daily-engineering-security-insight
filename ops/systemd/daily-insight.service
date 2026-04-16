@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily engineering and security insight run
+ConditionPathExists=/srv/daily-engineering-security-insight/configs/sources.local.json
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/daily-engineering-security-insight
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/bin/bash /srv/daily-engineering-security-insight/scripts/run_daily.sh

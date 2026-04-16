@@ -1,0 +1,55 @@
+{
+  "date": "2026-04-15",
+  "generated_at": "2026-04-15T12:00:00Z",
+  "overview_markdown": "# Daily insight overview\\n\\nThis is a sample digest used for schema and rendering tests.",
+  "top_items": [
+    {
+      "bucket": "software-engineering",
+      "title": "Example engineering item",
+      "source": "engineering-feed",
+      "source_url": "https://example.com/engineering/1",
+      "published_at": "2026-04-15T08:00:00Z",
+      "why_it_matters": "Shows the expected item structure.",
+      "confidence": "medium",
+      "team_relevance": "medium",
+      "actionability": "watch",
+      "recommended_action": "Track the change and decide whether it affects your toolchain."
+    },
+    {
+      "bucket": "security-for-ai",
+      "title": "Example AI security item",
+      "source": "security-for-ai-feed",
+      "source_url": "https://example.com/security-for-ai/1",
+      "published_at": "2026-04-15T09:00:00Z",
+      "why_it_matters": "Demonstrates AI-specific risk coverage.",
+      "confidence": "high",
+      "team_relevance": "high",
+      "actionability": "act-now",
+      "recommended_action": "Review the relevant control in your deployment process."
+    }
+  ],
+  "action_now": [
+    {
+      "title": "Review the highest priority item",
+      "reason": "The sample high-priority item is marked act-now.",
+      "owner_hint": "security lead"
+    }
+  ],
+  "watchlist": [
+    {
+      "title": "Watch engineering trend",
+      "reason": "Illustrative lower-urgency example.",
+      "revisit_in_days": 7
+    }
+  ],
+  "source_summary": {
+    "total_items_seen": 2,
+    "source_failures": [],
+    "bucket_counts": {
+      "software-engineering": 1,
+      "security": 0,
+      "ai-for-security": 0,
+      "security-for-ai": 1
+    }
+  }
+}

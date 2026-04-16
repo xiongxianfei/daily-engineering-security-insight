@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Daily Insight Digest",
+  "type": "object",
+  "required": [
+    "date",
+    "generated_at",
+    "overview_markdown",
+    "top_items",
+    "action_now",
+    "watchlist",
+    "source_summary"
+  ],
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "overview_markdown": {
+      "type": "string"
+    },
+    "top_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "bucket",
+          "title",
+          "source",
+          "source_url",
+          "published_at",
+          "why_it_matters",
+          "confidence",
+          "team_relevance",
+          "actionability",
+          "recommended_action"
+        ],
+        "properties": {
+          "bucket": {
+            "enum": [
+              "software-engineering",
+              "security",
+              "ai-for-security",
+              "security-for-ai"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "why_it_matters": {
+            "type": "string"
+          },
+          "confidence": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "team_relevance": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "actionability": {
+            "enum": [
+              "watch",
+              "act-now"
+            ]
+          },
+          "recommended_action": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "action_now": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "reason",
+          "owner_hint"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "owner_hint": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "watchlist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "reason",
+          "revisit_in_days"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "revisit_in_days": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_summary": {
+      "type": "object",
+      "required": [
+        "total_items_seen",
+        "source_failures",
+        "bucket_counts"
+      ],
+      "properties": {
+        "total_items_seen": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_failures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bucket_counts": {
+          "type": "object",
+          "required": [
+            "software-engineering",
+            "security",
+            "ai-for-security",
+            "security-for-ai"
+          ],
+          "properties": {
+            "software-engineering": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "security": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ai-for-security": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "security-for-ai": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
