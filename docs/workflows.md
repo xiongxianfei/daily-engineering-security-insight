@@ -11,17 +11,20 @@ Use a plan before multi-file, risky, ambiguous, or automation-heavy work.
 ## Daily digest workflow
 
 1. Collect sources into `inputs/YYYY-MM-DD/items.jsonl`.
-2. Verify collection coverage and note failures.
-3. Ask Codex to synthesize the frozen input.
-4. Validate the structured digest against `schemas/daily_insight.schema.json`.
-5. Render Markdown from the structured digest.
-6. Review for balance, confidence labeling, and actionability.
-7. Deliver or publish only after human review when the output feeds external decisions.
+2. Write deterministic coverage metadata into `inputs/YYYY-MM-DD/source_summary.json`.
+3. Verify collection coverage and note failures.
+4. Ask Codex to synthesize the frozen input.
+5. Re-apply the deterministic `source_summary` sidecar to the structured digest output.
+6. Validate the structured digest against `schemas/daily_insight.schema.json`.
+7. Render Markdown from the structured digest.
+8. Review for balance, confidence labeling, and actionability.
+9. Deliver or publish only after human review when the output feeds external decisions.
 
 During unattended runs:
 - wrappers around `codex exec` should close stdin explicitly; in Python, pass `stdin=subprocess.DEVNULL`
 - if collection succeeds but synthesis stalls, treat `inputs/YYYY-MM-DD/items.jsonl` as the recovery boundary and continue from the frozen input instead of recollecting live data
 - distinguish source-collection failures from synthesis failures in operator notes and in `source_summary`
+- inspect persisted bucket coverage with `uv run daily-insight source-health --date YYYY-MM-DD --state-db state/daily_insight.db`
 
 ## Backfill workflow
 
@@ -34,6 +37,7 @@ For historical reruns:
 
 - deterministic collectors first
 - approved live sources belong in `docs/source-inventory.md` before they belong in operator config
+- the detailed source-sufficiency contract, including manifest, bucket-health, and degraded-coverage rules, is defined in `specs/source-sufficiency.md`
 - live browsing only when the user explicitly asks for it or when no frozen input exists
 - keep source metadata with every surfaced item
 - do not suppress failed sources silently

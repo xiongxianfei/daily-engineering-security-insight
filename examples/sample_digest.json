@@ -50,6 +50,16 @@
       "security": 0,
       "ai-for-security": 0,
       "security-for-ai": 1
-    }
+    },
+    "bucket_health": {
+      "software-engineering": "healthy",
+      "security": "degraded-sparse-day",
+      "ai-for-security": "degraded-sparse-day",
+      "security-for-ai": "healthy"
+    },
+    "coverage_notes": [
+      "security: eligible sources produced zero fresh items: google-online-security-blog, cisa-kev-catalog",
+      "ai-for-security: eligible sources produced zero fresh items: google-threat-intelligence"
+    ]
   }
 }

@@ -14,11 +14,15 @@ This repository assumes a dedicated machine for Codex CLI runs.
    ```bash
    uv sync --dev
    ```
-5. Copy `configs/sources.example.json` to `configs/sources.local.json` and replace placeholder URLs with the approved live URLs from `docs/source-inventory.md`.
+5. Copy `configs/sources.example.json` to `configs/sources.local.json` and derive the live file from `configs/source-manifest.json`:
+   - keep the same source names, buckets, required flags, and failure policies
+   - replace only the placeholder URLs with the approved live URLs from `docs/source-inventory.md`
+   - keep `cisa-kev-catalog` in the local config once you replace its placeholder JSON URL with the approved live endpoint
 6. Verify the repo-local workflow before enabling the timer:
    ```bash
    bash scripts/ci.sh
    uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
+   uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
    ```
 
 ## Suggested runtime commands
@@ -28,6 +32,7 @@ uv sync --dev
 uv run daily-insight --help
 uv run daily-insight collect --dry-run --config configs/sources.example.json
 uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
+uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
 ```
 
 ## Example `~/.codex/config.toml`
@@ -64,7 +69,9 @@ Example operator flow:
 
 ```bash
 cp configs/sources.example.json configs/sources.local.json
+# Keep the same source names, buckets, required flags, and failure policies from configs/source-manifest.json
 # Replace example URLs with the approved live URLs from docs/source-inventory.md
+# Keep `cisa-kev-catalog` in place and replace its placeholder JSON URL with the approved live endpoint
 systemd-analyze verify ops/systemd/daily-insight.service ops/systemd/daily-insight.timer
 systemctl daemon-reload
 systemctl enable --now daily-insight.timer
@@ -80,3 +87,9 @@ Do not assume GitHub Actions can use your ChatGPT plan; this repository is desig
   ```
 - If a run fails after collection, inspect `inputs/YYYY-MM-DD/items.jsonl` first; it is the frozen synthesis input.
 - If the SQLite state under `state/daily_insight.db` becomes inconsistent with on-disk artifacts, treat the date-scoped JSON files as the source of truth and repair the state DB separately.
+
+## Source review cadence
+
+- Review `docs/source-inventory.md` and `configs/source-manifest.json` at least monthly on the dedicated machine.
+- If `uv run daily-insight source-health --date YYYY-MM-DD --state-db state/daily_insight.db` shows the same source failing for 3 consecutive days, review that source before trusting another unattended run.
+- If a bucket degrades repeatedly because it has only one healthy source, approve a new backup or record the no-backup rationale during the next monthly review.

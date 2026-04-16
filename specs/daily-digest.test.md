@@ -12,6 +12,8 @@ Map each spec requirement to verification.
 - no invented source details -> review prompt and renderer expectations
 - source failures visible -> validate schema requires `source_summary.source_failures`
 - empty bucket coverage stays explicit -> validate `source_summary.bucket_counts` keeps zero-count buckets and `source_summary.source_failures` explains missing coverage
+- bucket health stays explicit -> validate schema requires `source_summary.bucket_health` with the approved status names
+- degraded coverage notes stay explicit -> validate schema requires `source_summary.coverage_notes`
 
 ## Expected checks
 

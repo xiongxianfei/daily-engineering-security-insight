@@ -59,13 +59,17 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
    ```bash
    uv run daily-insight --help
    uv run daily-insight collect --dry-run --config configs/sources.example.json
+   uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
    bash scripts/ci.sh
    ```
 4. Create the operator-managed live source config:
    ```bash
    cp configs/sources.example.json configs/sources.local.json
    ```
-5. Replace the placeholder URLs in `configs/sources.local.json` with the approved live feeds from `docs/source-inventory.md`.
+5. Derive `configs/sources.local.json` from the reviewed manifest:
+   - keep the same source names, buckets, required flags, and failure policies recorded in `configs/source-manifest.json`
+   - replace only the placeholder URLs with the approved live feeds from `docs/source-inventory.md`
+   - keep `cisa-kev-catalog` in the local config once you replace its placeholder JSON URL with the approved live endpoint
 6. Run one date-scoped digest on the dedicated Linux Codex machine:
    ```bash
    uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
@@ -74,9 +78,11 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
 ## Daily workflow
 
 - `uv run daily-insight collect` gathers normalized items into `inputs/YYYY-MM-DD/items.jsonl`
+- `uv run daily-insight collect` also writes deterministic source-health metadata into `inputs/YYYY-MM-DD/source_summary.json`
 - Codex reads the frozen input and produces `outputs/YYYY-MM-DD/digest.json`
 - `uv run daily-insight render` extracts a clean `outputs/YYYY-MM-DD/digest.md`
 - SQLite-backed operational state is recorded under `state/daily_insight.db`
+- `uv run daily-insight source-health --date YYYY-MM-DD` inspects the persisted per-bucket source-health state
 - tests and schema checks keep the output stable
 
 ## Publication handoff

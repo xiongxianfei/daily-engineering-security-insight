@@ -143,7 +143,9 @@
       "required": [
         "total_items_seen",
         "source_failures",
-        "bucket_counts"
+        "bucket_counts",
+        "bucket_health",
+        "coverage_notes"
       ],
       "properties": {
         "total_items_seen": {
@@ -183,6 +185,56 @@
             }
           },
           "additionalProperties": false
+        },
+        "bucket_health": {
+          "type": "object",
+          "required": [
+            "software-engineering",
+            "security",
+            "ai-for-security",
+            "security-for-ai"
+          ],
+          "properties": {
+            "software-engineering": {
+              "enum": [
+                "healthy",
+                "degraded-source-failure",
+                "degraded-sparse-day",
+                "degraded-no-approved-source"
+              ]
+            },
+            "security": {
+              "enum": [
+                "healthy",
+                "degraded-source-failure",
+                "degraded-sparse-day",
+                "degraded-no-approved-source"
+              ]
+            },
+            "ai-for-security": {
+              "enum": [
+                "healthy",
+                "degraded-source-failure",
+                "degraded-sparse-day",
+                "degraded-no-approved-source"
+              ]
+            },
+            "security-for-ai": {
+              "enum": [
+                "healthy",
+                "degraded-source-failure",
+                "degraded-sparse-day",
+                "degraded-no-approved-source"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "coverage_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

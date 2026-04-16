@@ -10,6 +10,10 @@ The digest reads from a frozen normalized input bundle at:
 
 `inputs/YYYY-MM-DD/items.jsonl`
 
+The digest also reads a deterministic source summary sidecar at:
+
+`inputs/YYYY-MM-DD/source_summary.json`
+
 Each item should include source metadata and a bucket hint.
 
 ## Required output
@@ -39,6 +43,7 @@ The digest must keep these categories distinct:
 - The digest MUST preserve the original date scope of the frozen input.
 - The digest MUST avoid inventing source details that are absent from the frozen input.
 - The digest MUST expose source failures or missing coverage through `source_summary`.
+- The digest MUST copy `source_summary` from the deterministic sidecar instead of inventing or rebalancing source-health data during synthesis.
 
 ## Ranking guidance
 
@@ -66,3 +71,9 @@ Prefer items that are:
 
 - If a bucket has zero supporting items for the requested date, keep its count at `0` in `source_summary.bucket_counts` and explain the missing coverage or failed source in `source_summary.source_failures`.
 - Do not silently re-bucket items from a stronger category to make an empty bucket look populated.
+- `source_summary.bucket_health` MUST use the exact status names from `specs/source-sufficiency.md`:
+  - `healthy`
+  - `degraded-source-failure`
+  - `degraded-sparse-day`
+  - `degraded-no-approved-source`
+- `source_summary.coverage_notes` MUST preserve deterministic coverage explanations for degraded buckets.
