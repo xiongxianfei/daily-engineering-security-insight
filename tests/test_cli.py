@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -92,6 +93,7 @@ def test_run_command_uses_date_scoped_paths(tmp_path: Path, monkeypatch) -> None
     assert "Digest date: 2026-04-15" in subprocess_args[-1]
     assert "Frozen input file: inputs/2026-04-15/items.jsonl" in subprocess_args[-1]
     assert subprocess_kwargs["check"] is True
+    assert subprocess_kwargs["stdin"] is subprocess.DEVNULL
     assert recorded["render"] == (out_dir / "digest.json", out_dir / "digest.md")
 
 

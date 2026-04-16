@@ -18,6 +18,11 @@ Use a plan before multi-file, risky, ambiguous, or automation-heavy work.
 6. Review for balance, confidence labeling, and actionability.
 7. Deliver or publish only after human review when the output feeds external decisions.
 
+During unattended runs:
+- wrappers around `codex exec` should close stdin explicitly; in Python, pass `stdin=subprocess.DEVNULL`
+- if collection succeeds but synthesis stalls, treat `inputs/YYYY-MM-DD/items.jsonl` as the recovery boundary and continue from the frozen input instead of recollecting live data
+- distinguish source-collection failures from synthesis failures in operator notes and in `source_summary`
+
 ## Backfill workflow
 
 For historical reruns:

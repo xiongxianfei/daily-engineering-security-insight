@@ -117,6 +117,7 @@ def run(
             ),
         ],
         check=True,
+        stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
     )
     render_digest(digest_json, digest_md)

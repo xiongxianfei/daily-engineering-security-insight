@@ -11,6 +11,7 @@ Map each spec requirement to verification.
 - preserved date scope -> verify the daily-run command passes the requested date path into the prompt
 - no invented source details -> review prompt and renderer expectations
 - source failures visible -> validate schema requires `source_summary.source_failures`
+- empty bucket coverage stays explicit -> validate `source_summary.bucket_counts` keeps zero-count buckets and `source_summary.source_failures` explains missing coverage
 
 ## Expected checks
 
@@ -22,3 +23,4 @@ Map each spec requirement to verification.
 
 - add collector tests for source config parsing and normalization
 - add regression tests for duplicate suppression and bucket balance
+- add a regression test for digests that preserve explicit zero-count buckets when a source fails or a category has no frozen-input items
