@@ -18,9 +18,14 @@ Use a plan before multi-file, risky, ambiguous, or automation-heavy work.
 6. Review for balance, confidence labeling, and actionability.
 7. Deliver or publish only after human review when the output feeds external decisions.
 
+The detailed unattended synthesis lifecycle, including timeout, resume, and partial-output behavior, is defined in `specs/unattended-synthesis.md`.
+
 During unattended runs:
 - wrappers around `codex exec` should close stdin explicitly; in Python, pass `stdin=subprocess.DEVNULL`
+- `uv run daily-insight run --date YYYY-MM-DD ...` should reuse `inputs/YYYY-MM-DD/items.jsonl` when it already exists, and it should exit `0` without recollection when both final outputs already exist and `digest.json` is schema-valid
+- `uv run daily-insight synthesize --date YYYY-MM-DD --in-dir inputs/YYYY-MM-DD --out-dir outputs/YYYY-MM-DD ...` is the first-class recovery command after collection has already succeeded
 - if collection succeeds but synthesis stalls, treat `inputs/YYYY-MM-DD/items.jsonl` as the recovery boundary and continue from the frozen input instead of recollecting live data
+- set the CLI synthesis timeout with `--timeout-seconds` or `DAILY_INSIGHT_SYNTHESIS_TIMEOUT_SECONDS`; keep `systemd` `TimeoutStartSec` at least `60` seconds larger than the application timeout
 - distinguish source-collection failures from synthesis failures in operator notes and in `source_summary`
 
 ## Backfill workflow

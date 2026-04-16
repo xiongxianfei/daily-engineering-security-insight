@@ -11,6 +11,7 @@ def test_state_store_initializes_and_records_run(tmp_path: Path) -> None:
     store = StateStore(db_path)
 
     run_id = store.record_run(digest_date="2026-04-15", status="started")
+    store.record_lifecycle_event(digest_date="2026-04-15", status="collection_started")
     store.record_source_attempt(
         run_id=run_id,
         source_name="security-feed",
@@ -32,7 +33,11 @@ def test_state_store_initializes_and_records_run(tmp_path: Path) -> None:
             "SELECT source_name, status FROM source_attempts WHERE run_id = ?",
             (run_id,),
         ).fetchone()
+        lifecycle_row = connection.execute(
+            "SELECT digest_date, status FROM lifecycle_events ORDER BY id DESC LIMIT 1"
+        ).fetchone()
 
-    assert {"runs", "source_attempts", "dedupe_items"} <= tables
+    assert {"runs", "source_attempts", "dedupe_items", "lifecycle_events"} <= tables
     assert run_row == ("2026-04-15", "started")
     assert attempt_row == ("security-feed", "skipped")
+    assert lifecycle_row == ("2026-04-15", "collection_started")

@@ -6,4 +6,6 @@ ConditionPathExists=/srv/daily-engineering-security-insight/configs/sources.loca
 Type=oneshot
 WorkingDirectory=/srv/daily-engineering-security-insight
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=DAILY_INSIGHT_SYNTHESIS_TIMEOUT_SECONDS=900
+TimeoutStartSec=960
 ExecStart=/bin/bash /srv/daily-engineering-security-insight/scripts/run_daily.sh

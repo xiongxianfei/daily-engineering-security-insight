@@ -4,6 +4,8 @@
 
 Generate a daily insight brief for software engineering and security, with explicit attention to AI for Security and Security for AI.
 
+The unattended synthesis lifecycle for producing or resuming a date-scoped digest is defined separately in `specs/unattended-synthesis.md`.
+
 ## Inputs
 
 The digest reads from a frozen normalized input bundle at:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from datetime import date as date_type
 from pathlib import Path
 from typing import Annotated
@@ -9,6 +8,12 @@ import typer
 
 from daily_insight.collect import collect_sources
 from daily_insight.render import render_digest
+from daily_insight.synthesize import (
+    EXIT_COLLECTION_FAILED,
+    LifecycleCommandError,
+    outputs_are_complete,
+    synthesize_digest,
+)
 
 app = typer.Typer(
     add_completion=False,
@@ -19,6 +24,15 @@ app = typer.Typer(
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def _resolve_state_db(root: Path, state_db: Path | None) -> Path | None:
+    if state_db is not None:
+        return state_db
+    default_state_db = root / "state" / "daily_insight.db"
+    if default_state_db.exists():
+        return default_state_db
+    return None
 
 
 @app.command()
@@ -70,60 +84,117 @@ def run(
     state_db: Annotated[
         Path | None, typer.Option(help="SQLite path for local collection state")
     ] = None,
+    timeout_seconds: Annotated[
+        int | None,
+        typer.Option(help="Synthesis timeout in seconds; defaults to env or 900"),
+    ] = None,
 ) -> None:
     root = _repo_root()
     resolved_config = config or (root / "configs" / "sources.local.json")
     resolved_prompt = prompt_path or (root / "prompts" / "daily_digest_prompt.md")
     resolved_out_dir = out_dir or (root / "outputs" / date)
     resolved_in_dir = in_dir or (root / "inputs" / date)
-
-    if not resolved_config.is_file():
-        typer.echo(f"missing {resolved_config}; copy configs/sources.example.json first", err=True)
-        raise typer.Exit(code=1)
-
-    collect_exit_code = collect_sources(
-        date=date,
-        config_path=resolved_config,
-        out_dir=resolved_in_dir,
-        dry_run=False,
-        state_db_path=state_db,
-    )
-    if collect_exit_code != 0:
-        raise typer.Exit(code=collect_exit_code)
-
-    resolved_out_dir.mkdir(parents=True, exist_ok=True)
     digest_json = resolved_out_dir / "digest.json"
     digest_md = resolved_out_dir / "digest.md"
-    prompt = resolved_prompt.read_text(encoding="utf-8")
-    subprocess.run(
-        [
-            "codex",
-            "exec",
-            "-C",
-            str(root),
-            "--skip-git-repo-check",
-            "--full-auto",
-            "--json",
-            "--output-schema",
-            str(root / "schemas" / "daily_insight.schema.json"),
-            "--output-last-message",
-            str(digest_json),
-            (
-                f"{prompt}\n\n"
-                f"Digest date: {date}\n"
-                f"Frozen input file: inputs/{date}/items.jsonl\n\n"
-                "Wait for all requested work before returning. "
-                "Produce only the final structured report."
-            ),
-        ],
-        check=True,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-    )
-    render_digest(digest_json, digest_md)
+
+    if outputs_are_complete(
+        digest_json=digest_json,
+        digest_md=digest_md,
+        schema_path=root / "schemas" / "daily_insight.schema.json",
+    ):
+        typer.echo(f"date {date} is already complete")
+        raise typer.Exit(code=0)
+
+    if not (resolved_in_dir / "items.jsonl").is_file():
+        if not resolved_config.is_file():
+            typer.echo(
+                f"missing {resolved_config}; copy configs/sources.example.json first",
+                err=True,
+            )
+            raise typer.Exit(code=11)
+        collect_exit_code = collect_sources(
+            date=date,
+            config_path=resolved_config,
+            out_dir=resolved_in_dir,
+            dry_run=False,
+            state_db_path=state_db,
+        )
+        if collect_exit_code != 0:
+            raise typer.Exit(code=EXIT_COLLECTION_FAILED)
+    else:
+        typer.echo(f"reusing frozen input bundle at {resolved_in_dir / 'items.jsonl'}")
+
+    try:
+        outcome = synthesize_digest(
+            root=root,
+            date=date,
+            prompt_path=resolved_prompt,
+            in_dir=resolved_in_dir,
+            out_dir=resolved_out_dir,
+            state_db_path=_resolve_state_db(root, state_db),
+            timeout_seconds=timeout_seconds,
+        )
+    except LifecycleCommandError as exc:
+        typer.echo(exc.message, err=True)
+        raise typer.Exit(code=exc.exit_code) from exc
+
+    if outcome.already_complete:
+        typer.echo(f"date {date} is already complete")
+        raise typer.Exit(code=0)
+
     typer.echo("daily digest ready:")
-    typer.echo(f"  {digest_json}")
-    typer.echo(f"  {digest_md}")
+    typer.echo(f"  {outcome.digest_json}")
+    typer.echo(f"  {outcome.digest_md}")
+
+
+@app.command()
+def synthesize(
+    date: Annotated[
+        str, typer.Option(help="Digest date (YYYY-MM-DD)")
+    ] = date_type.today().isoformat(),
+    prompt_path: Annotated[
+        Path | None, typer.Option(help="Prompt file for the Codex synthesis step")
+    ] = None,
+    out_dir: Annotated[
+        Path | None, typer.Option(help="Directory for rendered digest outputs")
+    ] = None,
+    in_dir: Annotated[
+        Path | None, typer.Option(help="Directory for frozen collected inputs")
+    ] = None,
+    state_db: Annotated[
+        Path | None, typer.Option(help="SQLite path for local collection state")
+    ] = None,
+    timeout_seconds: Annotated[
+        int | None,
+        typer.Option(help="Synthesis timeout in seconds; defaults to env or 900"),
+    ] = None,
+) -> None:
+    root = _repo_root()
+    resolved_prompt = prompt_path or (root / "prompts" / "daily_digest_prompt.md")
+    resolved_out_dir = out_dir or (root / "outputs" / date)
+    resolved_in_dir = in_dir or (root / "inputs" / date)
+
+    try:
+        outcome = synthesize_digest(
+            root=root,
+            date=date,
+            prompt_path=resolved_prompt,
+            in_dir=resolved_in_dir,
+            out_dir=resolved_out_dir,
+            state_db_path=_resolve_state_db(root, state_db),
+            timeout_seconds=timeout_seconds,
+        )
+    except LifecycleCommandError as exc:
+        typer.echo(exc.message, err=True)
+        raise typer.Exit(code=exc.exit_code) from exc
+
+    if outcome.already_complete:
+        typer.echo(f"date {date} is already complete")
+        raise typer.Exit(code=0)
+
+    typer.echo("daily digest ready:")
+    typer.echo(f"  {outcome.digest_json}")
+    typer.echo(f"  {outcome.digest_md}")
 
 
 def main() -> None:

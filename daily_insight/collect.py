@@ -94,6 +94,7 @@ def collect_sources(
     sources = enabled_source_configs(load_source_configs(config_path))
     state_store = StateStore(state_db_path or Path("state") / "daily_insight.db")
     run_id = state_store.record_run(digest_date=date, status="started")
+    state_store.record_lifecycle_event(digest_date=date, status="collection_started")
 
     total_items = 0
     all_items: list[NormalizedItem] = []
@@ -143,11 +144,21 @@ def collect_sources(
             run_id=run_id,
             status="failed" if blocking_failure else "completed",
         )
+        state_store.record_lifecycle_event(
+            digest_date=date,
+            status="collection_failed" if blocking_failure else "collection_completed",
+            detail="dry-run" if not blocking_failure else "blocking source failed during dry-run",
+        )
         print(f"dry-run ok; normalized {total_items} items")
         return 1 if blocking_failure else 0
 
     if blocking_failure:
         state_store.update_run_status(run_id=run_id, status="failed")
+        state_store.record_lifecycle_event(
+            digest_date=date,
+            status="collection_failed",
+            detail="blocking source failure",
+        )
         return 1
 
     resolved_out_dir = out_dir if out_dir is not None else Path("inputs") / date
@@ -164,6 +175,7 @@ def collect_sources(
             )
 
     state_store.update_run_status(run_id=run_id, status="completed")
+    state_store.record_lifecycle_event(digest_date=date, status="collection_completed")
     print(f"wrote {total_items} items to {out_path}")
     return 0
 

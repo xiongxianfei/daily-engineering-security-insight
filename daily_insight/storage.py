@@ -48,6 +48,14 @@ class StateStore:
                     first_seen_at TEXT NOT NULL,
                     latest_url TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS lifecycle_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    digest_date TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    detail TEXT,
+                    recorded_at TEXT NOT NULL
+                );
                 """
             )
 
@@ -104,6 +112,59 @@ class StateStore:
                 (run_id, source_name, bucket, status, detail, _utc_now_iso()),
             )
             return int(cursor.lastrowid)
+
+    def record_lifecycle_event(
+        self,
+        *,
+        digest_date: str,
+        status: str,
+        detail: str | None = None,
+    ) -> int:
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                INSERT INTO lifecycle_events (digest_date, status, detail, recorded_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (digest_date, status, detail, _utc_now_iso()),
+            )
+            return int(cursor.lastrowid)
+
+    def list_lifecycle_events(self, *, digest_date: str) -> list[str]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT status
+                FROM lifecycle_events
+                WHERE digest_date = ?
+                ORDER BY id
+                """,
+                (digest_date,),
+            ).fetchall()
+        return [str(row[0]) for row in rows]
+
+    def list_source_failures(self, *, digest_date: str) -> list[str]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT source_name, detail
+                FROM source_attempts
+                JOIN runs ON runs.id = source_attempts.run_id
+                WHERE runs.digest_date = ? AND source_attempts.status = 'failed'
+                ORDER BY source_attempts.id
+                """,
+                (digest_date,),
+            ).fetchall()
+
+        failures: list[str] = []
+        seen: set[str] = set()
+        for source_name, detail in rows:
+            message = f"{source_name}: {detail}" if detail else str(source_name)
+            if message in seen:
+                continue
+            failures.append(message)
+            seen.add(message)
+        return failures
 
     def record_dedupe_item(self, *, item_id: str, source_name: str, latest_url: str) -> None:
         with self._connect() as connection:

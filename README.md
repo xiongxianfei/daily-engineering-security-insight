@@ -70,12 +70,21 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
    ```bash
    uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
    ```
+7. If a run already froze `inputs/YYYY-MM-DD/items.jsonl` but synthesis timed out or failed, resume from the frozen bundle instead of recollecting:
+   ```bash
+   uv run daily-insight synthesize \
+     --date 2026-04-15 \
+     --in-dir inputs/2026-04-15 \
+     --out-dir outputs/2026-04-15
+   ```
 
 ## Daily workflow
 
 - `uv run daily-insight collect` gathers normalized items into `inputs/YYYY-MM-DD/items.jsonl`
-- Codex reads the frozen input and produces `outputs/YYYY-MM-DD/digest.json`
-- `uv run daily-insight render` extracts a clean `outputs/YYYY-MM-DD/digest.md`
+- `uv run daily-insight run` reuses an existing frozen input for the same date instead of recollecting, and it no-ops when both final outputs are already complete
+- `uv run daily-insight synthesize` is the recovery command for a frozen input bundle that already exists
+- Codex produces `outputs/YYYY-MM-DD/digest.json`, then the renderer writes `outputs/YYYY-MM-DD/digest.md`
+- the default synthesis timeout is `900` seconds; override it with `--timeout-seconds` or `DAILY_INSIGHT_SYNTHESIS_TIMEOUT_SECONDS`
 - SQLite-backed operational state is recorded under `state/daily_insight.db`
 - tests and schema checks keep the output stable
 
