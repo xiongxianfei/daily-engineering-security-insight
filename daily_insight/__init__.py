@@ -7,5 +7,6 @@ __all__ = [
     "models",
     "normalize",
     "render",
+    "source_catalog",
     "storage",
 ]

@@ -7,10 +7,19 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from pydantic import ValidationError
 
 from daily_insight.collect import collect_sources
 from daily_insight.publish import publish_site
 from daily_insight.render import render_digest, render_html_digest
+from daily_insight.source_catalog import (
+    BUCKETS,
+    CATALOG_STATUSES,
+    bucket_counts,
+    filter_catalog_entries,
+    load_source_catalog,
+    status_counts,
+)
 from daily_insight.source_health import apply_deterministic_source_summary
 from daily_insight.storage import StateStore
 
@@ -30,6 +39,22 @@ def _prompt_path(root: Path, path: Path) -> str:
         return str(path.relative_to(root))
     except ValueError:
         return str(path)
+
+
+def _validate_bucket(bucket: str | None) -> str | None:
+    if bucket is None:
+        return None
+    if bucket not in BUCKETS:
+        raise typer.BadParameter(f"bucket must be one of: {', '.join(BUCKETS)}")
+    return bucket
+
+
+def _validate_catalog_status(status: str | None) -> str | None:
+    if status is None:
+        return None
+    if status not in CATALOG_STATUSES:
+        raise typer.BadParameter(f"status must be one of: {', '.join(CATALOG_STATUSES)}")
+    return status
 
 
 @app.command()
@@ -80,6 +105,58 @@ def render_html(
     ) as exc:
         typer.echo(f"browser HTML render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
+
+
+@app.command()
+def sources(
+    bucket: Annotated[str | None, typer.Option(help="Filter by owning bucket")] = None,
+    status: Annotated[str | None, typer.Option(help="Filter by catalog status")] = None,
+    catalog: Annotated[
+        Path | None, typer.Option(help="Path to the reviewed source catalog JSON")
+    ] = None,
+) -> None:
+    validated_bucket = _validate_bucket(bucket)
+    validated_status = _validate_catalog_status(status)
+
+    try:
+        source_catalog = load_source_catalog(catalog)
+    except (FileNotFoundError, JSONDecodeError, ValidationError, ValueError) as exc:
+        typer.echo(f"source catalog load failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    entries = filter_catalog_entries(
+        source_catalog.sources,
+        bucket=validated_bucket,
+        status=validated_status,
+    )
+    resolved_catalog = catalog or (
+        Path(__file__).resolve().parents[1] / "configs" / "source-catalog.json"
+    )
+
+    typer.echo("reviewed source catalog")
+    typer.echo(
+        "runtime-approved subset remains the only set that drives live collection "
+        "and source sufficiency."
+    )
+    typer.echo(f"catalog path: {resolved_catalog}")
+    typer.echo(f"total reviewed entries: {len(source_catalog.sources)}")
+    typer.echo(f"filtered sources: {len(entries)}")
+    typer.echo(
+        f"filters: bucket={validated_bucket or 'all'}, status={validated_status or 'all'}"
+    )
+    typer.echo("status summary:")
+    for current_status, count in status_counts(entries).items():
+        typer.echo(f"- {current_status}: {count}")
+    typer.echo("bucket summary:")
+    for current_bucket, count in bucket_counts(entries).items():
+        typer.echo(f"- {current_bucket}: {count}")
+    typer.echo("sources:")
+    for entry in entries:
+        machine_readable = "yes" if entry.machine_readable else "no"
+        typer.echo(
+            f"- {entry.name} | bucket={entry.bucket} | status={entry.catalog_status} "
+            f"| transport={entry.transport} | machine-readable={machine_readable}"
+        )
 
 
 @app.command("publish-site")

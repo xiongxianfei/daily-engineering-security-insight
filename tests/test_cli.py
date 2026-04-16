@@ -21,7 +21,43 @@ def test_cli_help_lists_foundation_commands() -> None:
     assert "render" in result.stdout
     assert "render-html" in result.stdout
     assert "run" in result.stdout
+    assert "sources" in result.stdout
     assert "source-health" in result.stdout
+
+
+def test_sources_command_summarizes_reviewed_catalog() -> None:
+    result = runner.invoke(app, ["sources"])
+
+    assert result.exit_code == 0
+    assert "reviewed source catalog" in result.stdout
+    assert "runtime-approved subset" in result.stdout
+    assert "runtime-approved: 10" in result.stdout
+    assert "reviewed-candidate: 15" in result.stdout
+    assert "deferred: 9" in result.stdout
+    assert "software-engineering: 12" in result.stdout
+    assert "python-insider" in result.stdout
+    assert "google-threat-intelligence" in result.stdout
+
+
+def test_sources_command_filters_by_bucket_and_status() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "sources",
+            "--bucket",
+            "security",
+            "--status",
+            "runtime-approved",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "filtered sources: 4" in result.stdout
+    assert "google-online-security-blog" in result.stdout
+    assert "cisa-advisories" in result.stdout
+    assert "github-security-blog" in result.stdout
+    assert "python-insider" not in result.stdout
+    assert "cloudflare-security-blog" not in result.stdout
 
 
 def test_run_command_requires_existing_config(tmp_path: Path) -> None:

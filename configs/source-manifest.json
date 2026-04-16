@@ -1,6 +1,6 @@
 {
   "reviewed_at": "2026-04-16",
-  "review_notes": "Authoritative reviewed source manifest aligned with the 2026-04-16 viability audit and the implemented collector/runtime support.",
+  "review_notes": "Authoritative reviewed runtime manifest after the 2026-04-16 source-catalog audit and the Milestone 4 low-risk runtime promotions.",
   "sources": [
     {
       "name": "python-insider",
@@ -35,6 +35,22 @@
       "review_notes": "Viable backup for development-platform and supply-chain workflow changes."
     },
     {
+      "name": "django-blog",
+      "bucket": "software-engineering",
+      "url": "https://www.djangoproject.com/rss/weblog/",
+      "transport": "rss",
+      "disposition": "backup",
+      "required_for_daily_run": false,
+      "failure_policy": "warn",
+      "freshness_mode": "published-date",
+      "machine_readable": true,
+      "implemented_status": "implemented",
+      "counts_toward_sufficiency": true,
+      "live_probe_result": "200 application/rss+xml",
+      "last_reviewed": "2026-04-16",
+      "review_notes": "Promoted in Milestone 4 as a low-risk Python-adjacent framework source that broadens software-engineering day-to-day signal without new transport work."
+    },
+    {
       "name": "google-online-security-blog",
       "bucket": "security",
       "url": "https://googleonlinesecurity.blogspot.com/atom.xml",
@@ -65,6 +81,38 @@
       "live_probe_result": "200 application/json",
       "last_reviewed": "2026-04-16",
       "review_notes": "Machine-readable KEV source is live, and the runtime now collects dateAdded-scoped daily deltas from the JSON feed."
+    },
+    {
+      "name": "cisa-advisories",
+      "bucket": "security",
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "transport": "rss",
+      "disposition": "backup",
+      "required_for_daily_run": false,
+      "failure_policy": "warn",
+      "freshness_mode": "published-date",
+      "machine_readable": true,
+      "implemented_status": "implemented",
+      "counts_toward_sufficiency": true,
+      "live_probe_result": "200 application/rss+xml",
+      "last_reviewed": "2026-04-16",
+      "review_notes": "Promoted in Milestone 4 as an official advisory feed that broadens security coverage with low implementation risk."
+    },
+    {
+      "name": "github-security-blog",
+      "bucket": "security",
+      "url": "https://github.blog/security/feed/",
+      "transport": "rss",
+      "disposition": "backup",
+      "required_for_daily_run": false,
+      "failure_policy": "warn",
+      "freshness_mode": "published-date",
+      "machine_readable": true,
+      "implemented_status": "implemented",
+      "counts_toward_sufficiency": true,
+      "live_probe_result": "200 application/rss+xml",
+      "last_reviewed": "2026-04-16",
+      "review_notes": "Promoted in Milestone 4 as a developer-adjacent security feed that complements the existing security runtime pair."
     },
     {
       "name": "google-threat-intelligence",
