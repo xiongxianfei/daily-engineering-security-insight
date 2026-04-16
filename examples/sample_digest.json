@@ -1,7 +1,7 @@
 {
   "date": "2026-04-15",
   "generated_at": "2026-04-15T12:00:00Z",
-  "overview_markdown": "# Daily insight overview\\n\\nThis is a sample digest used for schema and rendering tests.",
+  "overview_markdown": "# Daily insight overview\n\nThis sample digest demonstrates the minimum-ten-items contract. It uses three source entries and expands them into ten distinct source-backed findings without inventing extra source documents or hiding a sparse security bucket.",
   "top_items": [
     {
       "bucket": "software-engineering",
@@ -16,16 +16,112 @@
       "recommended_action": "Track the change and decide whether it affects your toolchain."
     },
     {
-      "bucket": "security-for-ai",
+      "bucket": "software-engineering",
+      "title": "Build tooling baseline review",
+      "source": "engineering-feed",
+      "source_url": "https://example.com/engineering/1",
+      "published_at": "2026-04-15T08:00:00Z",
+      "why_it_matters": "The same engineering update also changes assumptions about the supported build and test workflow.",
+      "confidence": "medium",
+      "team_relevance": "medium",
+      "actionability": "watch",
+      "recommended_action": "Confirm whether internal build images or local developer docs need a corresponding update."
+    },
+    {
+      "bucket": "software-engineering",
+      "title": "Release-note impact on CI defaults",
+      "source": "engineering-feed",
+      "source_url": "https://example.com/engineering/1",
+      "published_at": "2026-04-15T08:00:00Z",
+      "why_it_matters": "A single platform change can have separate consequences for CI defaults, not just for local developer tooling.",
+      "confidence": "medium",
+      "team_relevance": "medium",
+      "actionability": "act-now",
+      "recommended_action": "Check whether CI templates or pinned action versions need immediate review."
+    },
+    {
+      "bucket": "software-engineering",
+      "title": "Dependency maintenance follow-up",
+      "source": "engineering-feed",
+      "source_url": "https://example.com/engineering/1",
+      "published_at": "2026-04-15T08:00:00Z",
+      "why_it_matters": "The same source entry can imply follow-up work for dependency hygiene even when no new package advisory is present.",
+      "confidence": "low",
+      "team_relevance": "medium",
+      "actionability": "watch",
+      "recommended_action": "Add the change to the next dependency and release-process review instead of treating it as a one-off note."
+    },
+    {
+      "bucket": "ai-for-security",
       "title": "Example AI security item",
-      "source": "security-for-ai-feed",
-      "source_url": "https://example.com/security-for-ai/1",
+      "source": "ai-security-feed",
+      "source_url": "https://example.com/ai-security/1",
       "published_at": "2026-04-15T09:00:00Z",
       "why_it_matters": "Demonstrates AI-specific risk coverage.",
       "confidence": "high",
       "team_relevance": "high",
       "actionability": "act-now",
       "recommended_action": "Review the relevant control in your deployment process."
+    },
+    {
+      "bucket": "ai-for-security",
+      "title": "Alert triage automation pressure",
+      "source": "ai-security-feed",
+      "source_url": "https://example.com/ai-security/1",
+      "published_at": "2026-04-15T09:00:00Z",
+      "why_it_matters": "The same AI-for-security source can justify a separate finding about analyst workload and triage speed.",
+      "confidence": "medium",
+      "team_relevance": "high",
+      "actionability": "act-now",
+      "recommended_action": "Review where manual alert triage still blocks response time and decide whether automation is missing."
+    },
+    {
+      "bucket": "ai-for-security",
+      "title": "Secret-scanning coverage check",
+      "source": "ai-security-feed",
+      "source_url": "https://example.com/ai-security/1",
+      "published_at": "2026-04-15T09:00:00Z",
+      "why_it_matters": "One source entry can also imply a distinct control check around scanning coverage and protected developer workflows.",
+      "confidence": "medium",
+      "team_relevance": "high",
+      "actionability": "watch",
+      "recommended_action": "Audit whether secret scanning and code scanning still cover all internet-facing repositories and pipelines."
+    },
+    {
+      "bucket": "security-for-ai",
+      "title": "Controlled cyber model access program",
+      "source": "security-for-ai-feed",
+      "source_url": "https://example.com/security-for-ai/1",
+      "published_at": "2026-04-15T10:00:00Z",
+      "why_it_matters": "A program announcement can be a separate governance signal even when it comes from one source entry.",
+      "confidence": "high",
+      "team_relevance": "high",
+      "actionability": "watch",
+      "recommended_action": "Track eligibility and governance requirements before assuming the program can be adopted directly."
+    },
+    {
+      "bucket": "security-for-ai",
+      "title": "Vendor logging and oversight expectations",
+      "source": "security-for-ai-feed",
+      "source_url": "https://example.com/security-for-ai/1",
+      "published_at": "2026-04-15T10:00:00Z",
+      "why_it_matters": "The same source entry can independently imply logging, auditability, and vendor-oversight work.",
+      "confidence": "medium",
+      "team_relevance": "medium",
+      "actionability": "act-now",
+      "recommended_action": "Check whether current vendor review templates capture logging and oversight controls for external cyber-capable models."
+    },
+    {
+      "bucket": "security-for-ai",
+      "title": "External model policy review",
+      "source": "security-for-ai-feed",
+      "source_url": "https://example.com/security-for-ai/1",
+      "published_at": "2026-04-15T10:00:00Z",
+      "why_it_matters": "A single policy-oriented source entry can still support a distinct compliance and usage-policy finding.",
+      "confidence": "medium",
+      "team_relevance": "medium",
+      "actionability": "watch",
+      "recommended_action": "Review whether internal policy language distinguishes between general AI usage and external cyber-defense model access."
     }
   ],
   "action_now": [
@@ -43,23 +139,22 @@
     }
   ],
   "source_summary": {
-    "total_items_seen": 2,
+    "total_items_seen": 3,
     "source_failures": [],
     "bucket_counts": {
       "software-engineering": 1,
       "security": 0,
-      "ai-for-security": 0,
+      "ai-for-security": 1,
       "security-for-ai": 1
     },
     "bucket_health": {
       "software-engineering": "healthy",
       "security": "degraded-sparse-day",
-      "ai-for-security": "degraded-sparse-day",
+      "ai-for-security": "healthy",
       "security-for-ai": "healthy"
     },
     "coverage_notes": [
-      "security: eligible sources produced zero fresh items: google-online-security-blog, cisa-kev-catalog",
-      "ai-for-security: eligible sources produced zero fresh items: google-threat-intelligence"
+      "security: eligible sources produced zero fresh items: google-online-security-blog, cisa-kev-catalog"
     ]
   }
 }

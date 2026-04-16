@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
+import time
 from pathlib import Path
 
 from daily_insight.collect import collect_json, collect_rss, collect_sources
@@ -306,6 +308,67 @@ def test_collect_filters_rss_items_to_requested_date(tmp_path: Path, monkeypatch
     assert len(payload) == 1
     assert "Python 3.12.4 released" in payload[0]
     assert "Python 3.12.3 released" not in payload[0]
+
+
+def test_collect_uses_operator_local_day_for_timezone_aware_feed_items(
+    tmp_path: Path, monkeypatch
+) -> None:
+    config_path = tmp_path / "sources.json"
+    db_path = tmp_path / "state" / "daily_insight.db"
+    out_dir = tmp_path / "inputs" / "2026-04-16"
+    _write_config(
+        config_path,
+        [
+            {
+                "name": "github-changelog",
+                "transport": "rss",
+                "url": "https://feeds.example.com/github-changelog.xml",
+                "bucket": "software-engineering",
+                "enabled": True,
+                "required_for_daily_run": False,
+                "failure_policy": "warn",
+                "max_items_per_source": 10,
+            }
+        ],
+    )
+
+    def fake_collect(source):  # type: ignore[no-untyped-def]
+        return [
+            normalize_item(
+                source_name=source.name,
+                bucket=source.bucket,
+                title="Late-night changelog item",
+                url="https://example.com/changelog/late-night",
+                summary="Published late enough to fall into the next local day.",
+                published_at="Wed, 15 Apr 2026 22:05:52 +0000",
+                tags=["changelog"],
+            )
+        ]
+
+    monkeypatch.setattr("daily_insight.collect.collect_rss", fake_collect)
+
+    previous_tz = os.environ.get("TZ")
+    os.environ["TZ"] = "Europe/Moscow"
+    time.tzset()
+    try:
+        exit_code = collect_sources(
+            date="2026-04-16",
+            config_path=config_path,
+            out_dir=out_dir,
+            dry_run=False,
+            state_db_path=db_path,
+        )
+    finally:
+        if previous_tz is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = previous_tz
+        time.tzset()
+
+    assert exit_code == 0
+    payload = (out_dir / "items.jsonl").read_text(encoding="utf-8").strip().splitlines()
+    assert len(payload) == 1
+    assert "Late-night changelog item" in payload[0]
 
 
 def test_collect_rss_uses_browser_like_user_agent(monkeypatch) -> None:

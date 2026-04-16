@@ -23,6 +23,7 @@
     },
     "top_items": {
       "type": "array",
+      "minItems": 10,
       "items": {
         "type": "object",
         "required": [

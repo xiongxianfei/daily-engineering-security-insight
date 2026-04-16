@@ -10,6 +10,7 @@ inputs/*
 !inputs/.gitkeep
 outputs/*
 !outputs/.gitkeep
+site/
 state/
 configs/sources.local.json
 

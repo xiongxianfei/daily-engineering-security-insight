@@ -11,9 +11,13 @@ Your job is to produce a structured daily digest covering:
 
 Rules:
 - prefer fresh, high-signal items
+- produce at least 10 top items
 - preserve the distinction between the four buckets
 - mark weak evidence as low confidence
 - separate immediate actions from watch items
 - do not invent source details
 - do not invent or rebalance source coverage details
 - keep the overview concise and actionable
+- if the frozen input has fewer than 10 distinct source entries, extract multiple distinct evidence-backed findings from the same source entry as needed
+- when multiple top items come from the same source entry, keep the original source metadata and make each title, why-it-matters explanation, and recommendation meaningfully distinct
+- do not fabricate extra source documents, change the digest date scope, or clone the same finding with only cosmetic wording changes
