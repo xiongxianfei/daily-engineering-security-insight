@@ -192,6 +192,7 @@ The local scaffold covers much of the repository surface, but it is still organi
 - 2026-04-16: started Milestone 5 by aligning the Typer `run` command, `scripts/run_daily.sh`, and the sample `systemd` unit with the same date-scoped command contract.
 - 2026-04-16: completed Milestone 5 with a real Linux-host end-to-end run using an operator-managed `configs/sources.local.json`, producing `outputs/2026-04-15/digest.json` and `outputs/2026-04-15/digest.md`.
 - 2026-04-16: completed Milestone 6 by tightening maintainer handoff docs, publication prerequisites, ignored local state, and repository contribution guidance around the implemented Linux + `uv` workflow.
+- 2026-04-16: post-merge operator verification for `2026-04-16` exposed an unattended-run bug in the CLI wrapper, so the wrapper was updated to close stdin explicitly and the daily digest was recovered from the frozen input after collection succeeded.
 
 ## Surprises and discoveries
 
@@ -207,6 +208,8 @@ The local scaffold covers much of the repository surface, but it is still organi
 - 2026-04-16: OpenAI News rejects the current RSS fetch path with `HTTP Error 403: Forbidden`, so it remains an optional `warn` source rather than a required blocker for daily generation.
 - 2026-04-16: `codex exec` refuses to run in this non-Git workspace unless `--skip-git-repo-check` is passed through the CLI wrapper.
 - 2026-04-16: the structured-output schema needed `top_items[].published_at` in the required field list before `codex exec` would accept it as a valid JSON schema.
+- 2026-04-16: non-interactive wrappers around `codex exec` must close stdin explicitly; otherwise the process can inherit the caller's stdin and wait for additional input instead of running unattended.
+- 2026-04-16: once collection has written `inputs/YYYY-MM-DD/items.jsonl`, that frozen file is the recovery boundary; if synthesis stalls, retry from the frozen input rather than recollecting live sources for the same date.
 
 ## Decision log
 
@@ -263,6 +266,13 @@ The local scaffold covers much of the repository surface, but it is still organi
 - `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run daily-insight collect --date 2026-04-15 --config configs/sources.local.json --out-dir inputs/2026-04-15 --state-db state/daily_insight.db` -> passed; collected 25 items, with `openai-news` failing as a visible warning
 - `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json --state-db state/daily_insight.db` -> passed; produced `outputs/2026-04-15/digest.json` and `outputs/2026-04-15/digest.md`
 - `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run python -m json.tool outputs/2026-04-15/digest.json > /dev/null` -> passed
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run pytest -q tests/test_cli.py` -> passed after adding a regression for unattended Codex stdin handling
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run ruff check daily_insight/cli.py tests/test_cli.py` -> passed
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run daily-insight run --date 2026-04-16 --config configs/sources.local.json --state-db state/daily_insight.db` -> collection completed and froze `inputs/2026-04-16/items.jsonl`, but the nested Codex synthesis step remained long-running; final digest recovery proceeded from the frozen input instead of recollecting live sources
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run python -m json.tool outputs/2026-04-16/digest.json > /dev/null` -> passed
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run daily-insight render outputs/2026-04-16/digest.json outputs/2026-04-16/digest.md` -> passed
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run python - <<'PY' ... jsonschema validate outputs/2026-04-16/digest.json ... PY` -> passed
+- `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv ~/.local/bin/uv run pytest -q` -> passed
 
 ## Idempotence and recovery
 
@@ -282,3 +292,4 @@ The local scaffold covers much of the repository surface, but it is still organi
 - Final operator command surface is `uv run daily-insight` with `collect`, `render`, and `run` subcommands; `scripts/run_daily.sh` remains a thin Linux wrapper for `systemd`.
 - The approved live-source inventory is documented in `docs/source-inventory.md`, while the versioned example config stays placeholder-safe and the live `configs/sources.local.json` stays operator-managed.
 - Linux machine-specific gotchas are now explicit: this workspace needs `UV_PROJECT_ENVIRONMENT=/tmp/daily-insight-venv` for local verification, sample `systemd` units verify with environmental permission warnings, and non-Git workspaces require `--skip-git-repo-check` for Codex execution.
+- A later `2026-04-16` operator run showed that successful collection and successful synthesis should be treated as separate recovery stages: once `items.jsonl` exists, finish the date from that frozen bundle instead of recollecting.

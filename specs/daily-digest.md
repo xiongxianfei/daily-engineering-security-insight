@@ -61,3 +61,8 @@ Prefer items that are:
 - A maintainer can run one command and get both JSON and Markdown outputs for a date.
 - The digest remains understandable even when one or more source buckets are empty.
 - The report structure is stable enough for downstream tooling.
+
+## Gotchas
+
+- If a bucket has zero supporting items for the requested date, keep its count at `0` in `source_summary.bucket_counts` and explain the missing coverage or failed source in `source_summary.source_failures`.
+- Do not silently re-bucket items from a stronger category to make an empty bucket look populated.
