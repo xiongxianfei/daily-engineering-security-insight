@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import subprocess
 from datetime import date as date_type
+from json import JSONDecodeError
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
 from daily_insight.collect import collect_sources
-from daily_insight.render import render_digest
+from daily_insight.publish import publish_site
+from daily_insight.render import render_digest, render_html_digest
 from daily_insight.source_health import apply_deterministic_source_summary
 from daily_insight.storage import StateStore
 
@@ -59,6 +61,44 @@ def render(
     output_md: Annotated[Path, typer.Argument(help="Path to the rendered Markdown file")],
 ) -> None:
     render_digest(input_json, output_md)
+
+
+@app.command("render-html")
+def render_html(
+    input_json: Annotated[Path, typer.Argument(help="Path to the structured digest JSON")],
+    output_html: Annotated[Path, typer.Argument(help="Path to the rendered HTML file")],
+) -> None:
+    try:
+        render_html_digest(input_json, output_html)
+    except (
+        FileNotFoundError,
+        JSONDecodeError,
+        KeyError,
+        TypeError,
+        ValueError,
+        subprocess.CalledProcessError,
+    ) as exc:
+        typer.echo(f"browser HTML render failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("publish-site")
+def publish_browser_site(
+    date: Annotated[str, typer.Option(help="Digest date (YYYY-MM-DD)")],
+    source_root: Annotated[
+        Path, typer.Option(help="Root directory containing canonical digest outputs")
+    ] = Path("outputs"),
+    site_root: Annotated[
+        Path, typer.Option(help="Generated browser site root")
+    ] = Path("site"),
+) -> None:
+    try:
+        published_root = publish_site(source_root=source_root, date=date, site_root=site_root)
+    except (FileNotFoundError, JSONDecodeError, KeyError, TypeError, ValueError, OSError) as exc:
+        typer.echo(f"site publish failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"published browser site: {published_root}")
 
 
 @app.command("source-health")

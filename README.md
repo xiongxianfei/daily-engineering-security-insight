@@ -81,9 +81,34 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
 - `uv run daily-insight collect` also writes deterministic source-health metadata into `inputs/YYYY-MM-DD/source_summary.json`
 - Codex reads the frozen input and produces `outputs/YYYY-MM-DD/digest.json`
 - `uv run daily-insight render` extracts a clean `outputs/YYYY-MM-DD/digest.md`
+- `uv run daily-insight render-html` can render a self-contained browser page from canonical `digest.json`
+- `uv run daily-insight publish-site` publishes a reviewed digest into the generated `site/` browser root without serving raw `outputs/` directly
 - SQLite-backed operational state is recorded under `state/daily_insight.db`
 - `uv run daily-insight source-health --date YYYY-MM-DD` inspects the persisted per-bucket source-health state
 - tests and schema checks keep the output stable
+
+## Browser delivery
+
+Browser reading is a static publication step, not a live app:
+
+1. Generate or review the canonical digest under `outputs/YYYY-MM-DD/`.
+2. Publish the reviewed date into the generated browser site root:
+   ```bash
+   uv run daily-insight publish-site --source-root outputs --date 2026-04-16 --site-root site
+   ```
+3. Smoke-test the browser output locally:
+   ```bash
+   python -m http.server 8000 --directory site
+   curl http://127.0.0.1:8000/latest/
+   ```
+
+The published browser contract is:
+
+- `site/index.html`
+- `site/latest/index.html`
+- `site/YYYY-MM-DD/index.html`
+
+Serve only `site/`. Do not point a static server at the repository root, `outputs/`, `inputs/`, `state/`, or `configs/`.
 
 ## Publication handoff
 
@@ -96,6 +121,7 @@ Before the first public push:
    bash scripts/ci.sh
    systemd-analyze verify ops/systemd/daily-insight.service ops/systemd/daily-insight.timer
    uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
+   uv run daily-insight publish-site --source-root outputs --date 2026-04-15 --site-root site
    ```
 4. Connect this workspace to the empty GitHub repository only after the checks above succeed:
    ```bash

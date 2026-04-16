@@ -205,6 +205,13 @@ A source only counts toward date-scoped sufficiency when:
 
 A successful collection that yields zero fresh items MUST be treated as a sparse day, not as a source failure.
 
+For `published-date` freshness:
+
+- timezone-aware timestamps MUST be compared against the requested digest date in the operator's local digest timezone, not forced to UTC
+- date-only values MAY be compared as literal calendar dates
+
+This prevents late-evening UTC feed entries from being dropped when they already belong to the next local digest day on the dedicated machine.
+
 ### R7. Cumulative Source Rules
 
 Cumulative sources such as KEV MUST have explicit delta or freshness rules before they count toward sufficiency.

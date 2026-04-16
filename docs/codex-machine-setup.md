@@ -23,6 +23,7 @@ This repository assumes a dedicated machine for Codex CLI runs.
    bash scripts/ci.sh
    uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
    uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
+   uv run daily-insight publish-site --source-root outputs --date 2026-04-15 --site-root site
    ```
 
 ## Suggested runtime commands
@@ -33,7 +34,28 @@ uv run daily-insight --help
 uv run daily-insight collect --dry-run --config configs/sources.example.json
 uv run daily-insight run --date 2026-04-15 --config configs/sources.local.json
 uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
+uv run daily-insight publish-site --source-root outputs --date 2026-04-15 --site-root site
 ```
+
+## Browser serving
+
+Use a generated browser site root, not the repository root:
+
+```bash
+uv run daily-insight publish-site --source-root outputs --date 2026-04-15 --site-root site
+python -m http.server 8000 --directory site
+curl http://127.0.0.1:8000/
+curl http://127.0.0.1:8000/latest/
+```
+
+`python -m http.server` is a smoke-test only. For durable Linux serving, use a static server such as NGINX rooted at `site/`, not at the repository root. A sample config is in `ops/nginx/daily-insight-site.conf`.
+
+Never serve:
+
+- `inputs/`
+- `state/`
+- `configs/sources.local.json`
+- the raw repository root
 
 ## Example `~/.codex/config.toml`
 
@@ -76,6 +98,8 @@ systemd-analyze verify ops/systemd/daily-insight.service ops/systemd/daily-insig
 systemctl daemon-reload
 systemctl enable --now daily-insight.timer
 ```
+
+If you want browser delivery from the same machine, publish reviewed dates into `site/` and point NGINX only at that generated site root.
 
 Do not assume GitHub Actions can use your ChatGPT plan; this repository is designed for a dedicated Codex machine.
 

@@ -6,6 +6,7 @@ Map each spec requirement to verification.
 
 - overview summary -> validate sample JSON contains `overview_markdown`
 - source metadata on top items -> validate schema requires `source` and `source_url`
+- minimum 10 top items -> validate schema requires at least 10 `top_items` and sample digest satisfies that minimum
 - confidence labels -> validate schema requires `confidence`
 - immediate action vs watch separation -> validate schema requires `action_now` and `watchlist`
 - preserved date scope -> verify the daily-run command passes the requested date path into the prompt
@@ -14,6 +15,8 @@ Map each spec requirement to verification.
 - empty bucket coverage stays explicit -> validate `source_summary.bucket_counts` keeps zero-count buckets and `source_summary.source_failures` explains missing coverage
 - bucket health stays explicit -> validate schema requires `source_summary.bucket_health` with the approved status names
 - degraded coverage notes stay explicit -> validate schema requires `source_summary.coverage_notes`
+- sparse-day minimum behavior -> regression-test that the prompt/schema path allows multiple distinct source-backed findings from the same frozen source entry instead of fabricating new source documents
+- source-summary semantics stay explicit -> regression-test that rendered output explains `source_summary` as collected source coverage rather than expanded top-item count
 
 ## Expected checks
 

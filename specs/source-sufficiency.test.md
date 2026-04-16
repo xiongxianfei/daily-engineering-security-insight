@@ -128,6 +128,7 @@ Related plan: `docs/plans/2026-04-16-strengthen-insight-source-coverage.md`
 - Verify:
   - the bucket status is `healthy`
   - a bucket with zero collected items cannot be classified as `healthy`
+  - a timezone-aware feed item that lands after midnight in the operator's local digest timezone still counts for that local digest date even if its UTC calendar date is the previous day
 
 ### T12. Cumulative sources use daily delta or explicit no-change behavior
 

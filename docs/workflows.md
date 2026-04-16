@@ -19,12 +19,14 @@ Use a plan before multi-file, risky, ambiguous, or automation-heavy work.
 7. Render Markdown from the structured digest.
 8. Review for balance, confidence labeling, and actionability.
 9. Deliver or publish only after human review when the output feeds external decisions.
+10. If browser delivery is enabled, publish the approved digest into the generated browser site root from canonical `outputs/YYYY-MM-DD/` artifacts rather than serving raw outputs directly.
 
 During unattended runs:
 - wrappers around `codex exec` should close stdin explicitly; in Python, pass `stdin=subprocess.DEVNULL`
 - if collection succeeds but synthesis stalls, treat `inputs/YYYY-MM-DD/items.jsonl` as the recovery boundary and continue from the frozen input instead of recollecting live data
 - distinguish source-collection failures from synthesis failures in operator notes and in `source_summary`
 - inspect persisted bucket coverage with `uv run daily-insight source-health --date YYYY-MM-DD --state-db state/daily_insight.db`
+- do not auto-promote a successful `run` into the visible browser `latest/` page unless a higher-priority approved spec changes that publication boundary
 
 ## Backfill workflow
 

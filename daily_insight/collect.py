@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Sequence
@@ -74,13 +74,14 @@ def _filter_items_for_freshness(
     if freshness_mode != "published-date":
         return items
 
+    local_timezone = datetime.now().astimezone().tzinfo
     fresh_items: list[NormalizedItem] = []
     for item in items:
         parsed = _parse_published_datetime(item.published_at)
         if parsed is None:
             continue
-        if parsed.tzinfo is not None:
-            normalized_date = parsed.astimezone(timezone.utc).date().isoformat()
+        if parsed.tzinfo is not None and local_timezone is not None:
+            normalized_date = parsed.astimezone(local_timezone).date().isoformat()
         else:
             normalized_date = parsed.date().isoformat()
         if normalized_date == digest_date:
