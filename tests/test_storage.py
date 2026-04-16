@@ -18,6 +18,13 @@ def test_state_store_initializes_and_records_run(tmp_path: Path) -> None:
         status="skipped",
         detail="dry-run placeholder source",
     )
+    store.record_bucket_health(
+        run_id=run_id,
+        bucket="security",
+        status="degraded-sparse-day",
+        item_count=0,
+        detail="eligible sources produced zero fresh items",
+    )
 
     with sqlite3.connect(db_path) as connection:
         tables = {
@@ -32,7 +39,12 @@ def test_state_store_initializes_and_records_run(tmp_path: Path) -> None:
             "SELECT source_name, status FROM source_attempts WHERE run_id = ?",
             (run_id,),
         ).fetchone()
+        health_row = connection.execute(
+            "SELECT bucket, status, item_count FROM bucket_health WHERE run_id = ?",
+            (run_id,),
+        ).fetchone()
 
-    assert {"runs", "source_attempts", "dedupe_items"} <= tables
+    assert {"runs", "source_attempts", "dedupe_items", "bucket_health"} <= tables
     assert run_row == ("2026-04-15", "started")
     assert attempt_row == ("security-feed", "skipped")
+    assert health_row == ("security", "degraded-sparse-day", 0)

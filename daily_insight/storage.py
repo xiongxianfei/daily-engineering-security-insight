@@ -48,6 +48,16 @@ class StateStore:
                     first_seen_at TEXT NOT NULL,
                     latest_url TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS bucket_health (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
+                    bucket TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    item_count INTEGER NOT NULL,
+                    detail TEXT,
+                    recorded_at TEXT NOT NULL
+                );
                 """
             )
 
@@ -117,3 +127,63 @@ class StateStore:
                 """,
                 (item_id, source_name, _utc_now_iso(), latest_url),
             )
+
+    def record_bucket_health(
+        self,
+        *,
+        run_id: int,
+        bucket: str,
+        status: str,
+        item_count: int,
+        detail: str | None = None,
+    ) -> int:
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                INSERT INTO bucket_health (
+                    run_id,
+                    bucket,
+                    status,
+                    item_count,
+                    detail,
+                    recorded_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (run_id, bucket, status, item_count, detail, _utc_now_iso()),
+            )
+            return int(cursor.lastrowid)
+
+    def latest_run_for_date(self, *, digest_date: str) -> tuple[int, str] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT id, status
+                FROM runs
+                WHERE digest_date = ?
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (digest_date,),
+            ).fetchone()
+        if row is None:
+            return None
+        return int(row[0]), str(row[1])
+
+    def bucket_health_for_run(
+        self, *, run_id: int
+    ) -> list[tuple[str, str, int, str | None]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT bucket, status, item_count, detail
+                FROM bucket_health
+                WHERE run_id = ?
+                ORDER BY id
+                """,
+                (run_id,),
+            ).fetchall()
+        return [
+            (str(bucket), str(status), int(item_count), detail)
+            for bucket, status, item_count, detail in rows
+        ]

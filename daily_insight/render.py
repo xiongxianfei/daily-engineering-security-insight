@@ -46,6 +46,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.append("- Bucket counts:")
     for bucket, count in payload["source_summary"]["bucket_counts"].items():
         lines.append(f"  - {bucket}: {count}")
+    lines.append("- Bucket health:")
+    for bucket, status in payload["source_summary"]["bucket_health"].items():
+        lines.append(f"  - {bucket}: {status}")
+    notes = payload["source_summary"]["coverage_notes"]
+    lines.append(f"- Coverage notes: {', '.join(notes) if notes else 'none'}")
     return "\n".join(lines).rstrip() + "\n"
 
 

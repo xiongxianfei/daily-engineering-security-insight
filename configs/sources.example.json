@@ -10,12 +10,32 @@
     "max_items_per_source": 10
   },
   {
+    "name": "github-changelog",
+    "transport": "rss",
+    "url": "https://example.com/github-changelog.xml",
+    "bucket": "software-engineering",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
     "name": "google-online-security-blog",
     "transport": "rss",
     "url": "https://example.com/google-online-security.xml",
     "bucket": "security",
     "enabled": true,
     "required_for_daily_run": true,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
+    "name": "cisa-kev-catalog",
+    "transport": "json",
+    "url": "https://example.com/known-exploited-vulnerabilities.json",
+    "bucket": "security",
+    "enabled": true,
+    "required_for_daily_run": false,
     "failure_policy": "warn",
     "max_items_per_source": 10
   },
@@ -33,6 +53,16 @@
     "name": "openai-news",
     "transport": "rss",
     "url": "https://example.com/openai-news.xml",
+    "bucket": "security-for-ai",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 5
+  },
+  {
+    "name": "deepmind-blog",
+    "transport": "rss",
+    "url": "https://example.com/deepmind-blog.xml",
     "bucket": "security-for-ai",
     "enabled": true,
     "required_for_daily_run": false,

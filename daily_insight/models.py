@@ -10,7 +10,7 @@ BucketName = Literal[
     "ai-for-security",
     "security-for-ai",
 ]
-TransportName = Literal["rss"]
+TransportName = Literal["rss", "json"]
 FailurePolicy = Literal["warn", "fail"]
 
 

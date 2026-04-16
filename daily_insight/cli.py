@@ -9,6 +9,8 @@ import typer
 
 from daily_insight.collect import collect_sources
 from daily_insight.render import render_digest
+from daily_insight.source_health import apply_deterministic_source_summary
+from daily_insight.storage import StateStore
 
 app = typer.Typer(
     add_completion=False,
@@ -19,6 +21,13 @@ app = typer.Typer(
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
+
+
+def _prompt_path(root: Path, path: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
 
 
 @app.command()
@@ -50,6 +59,35 @@ def render(
     output_md: Annotated[Path, typer.Argument(help="Path to the rendered Markdown file")],
 ) -> None:
     render_digest(input_json, output_md)
+
+
+@app.command("source-health")
+def source_health(
+    date: Annotated[str, typer.Option(help="Digest date (YYYY-MM-DD)")],
+    state_db: Annotated[
+        Path | None, typer.Option(help="SQLite path for local collection state")
+    ] = None,
+) -> None:
+    root = _repo_root()
+    resolved_state_db = state_db or (root / "state" / "daily_insight.db")
+    store = StateStore(resolved_state_db)
+    latest_run = store.latest_run_for_date(digest_date=date)
+    if latest_run is None:
+        typer.echo(f"no recorded run for {date}", err=True)
+        raise typer.Exit(code=1)
+
+    run_id, run_status = latest_run
+    bucket_rows = store.bucket_health_for_run(run_id=run_id)
+    if not bucket_rows:
+        typer.echo(f"no bucket health recorded for {date}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"source health for {date} (run status: {run_status})")
+    for bucket, status, item_count, detail in bucket_rows:
+        line = f"- {bucket}: {status} [{item_count} item(s)]"
+        if detail:
+            line = f"{line} - {detail}"
+        typer.echo(line)
 
 
 @app.command()
@@ -94,6 +132,8 @@ def run(
     resolved_out_dir.mkdir(parents=True, exist_ok=True)
     digest_json = resolved_out_dir / "digest.json"
     digest_md = resolved_out_dir / "digest.md"
+    source_summary_json = resolved_in_dir / "source_summary.json"
+    frozen_input_jsonl = resolved_in_dir / "items.jsonl"
     prompt = resolved_prompt.read_text(encoding="utf-8")
     subprocess.run(
         [
@@ -111,7 +151,10 @@ def run(
             (
                 f"{prompt}\n\n"
                 f"Digest date: {date}\n"
-                f"Frozen input file: inputs/{date}/items.jsonl\n\n"
+                f"Frozen input file: {_prompt_path(root, frozen_input_jsonl)}\n"
+                f"Source summary file: {_prompt_path(root, source_summary_json)}\n\n"
+                "Copy the source_summary object from the source summary file exactly. "
+                "Do not change its counts, status names, or coverage notes.\n\n"
                 "Wait for all requested work before returning. "
                 "Produce only the final structured report."
             ),
@@ -120,6 +163,7 @@ def run(
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
     )
+    apply_deterministic_source_summary(digest_json, source_summary_json)
     render_digest(digest_json, digest_md)
     typer.echo("daily digest ready:")
     typer.echo(f"  {digest_json}")
