@@ -38,8 +38,11 @@ For historical reruns:
 ## Source policy
 
 - deterministic collectors first
+- the broader reviewed source universe belongs in the reviewed source catalog; the smaller runtime-approved subset belongs in `configs/source-manifest.json`
 - approved live sources belong in `docs/source-inventory.md` before they belong in operator config
+- inspect the broader reviewed catalog with `uv run daily-insight sources`; inspect the runtime-approved subset through `configs/source-manifest.json` and `docs/source-inventory.md`
 - the detailed source-sufficiency contract, including manifest, bucket-health, and degraded-coverage rules, is defined in `specs/source-sufficiency.md`
+- the broader reviewed-catalog contract, including the 30-entry target and the boundary between catalog breadth and runtime approval, is defined in `specs/source-catalog.md`
 - live browsing only when the user explicitly asks for it or when no frozen input exists
 - keep source metadata with every surfaced item
 - do not suppress failed sources silently

@@ -49,8 +49,11 @@ def test_source_manifest_defines_reviewed_sources_and_required_metadata() -> Non
     assert names == [
         "python-insider",
         "github-changelog",
+        "django-blog",
         "google-online-security-blog",
         "cisa-kev-catalog",
+        "cisa-advisories",
+        "github-security-blog",
         "google-threat-intelligence",
         "openai-news",
         "deepmind-blog",
@@ -80,10 +83,14 @@ def test_source_manifest_records_expected_live_probe_and_sufficiency_decisions()
 
     assert sources["python-insider"]["live_probe_result"] == "200 application/xml"
     assert sources["github-changelog"]["disposition"] == "backup"
+    assert sources["django-blog"]["disposition"] == "backup"
     assert sources["google-online-security-blog"]["counts_toward_sufficiency"] is True
     assert sources["cisa-kev-catalog"]["transport"] == "json"
     assert sources["cisa-kev-catalog"]["implemented_status"] == "implemented"
     assert sources["cisa-kev-catalog"]["counts_toward_sufficiency"] is True
+    assert sources["cisa-advisories"]["disposition"] == "backup"
+    assert sources["cisa-advisories"]["counts_toward_sufficiency"] is True
+    assert sources["github-security-blog"]["disposition"] == "backup"
     assert sources["openai-news"]["implemented_status"] == "implemented"
     assert sources["openai-news"]["counts_toward_sufficiency"] is True
     assert sources["deepmind-blog"]["disposition"] == "backup"

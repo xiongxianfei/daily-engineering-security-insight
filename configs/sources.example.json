@@ -20,6 +20,16 @@
     "max_items_per_source": 10
   },
   {
+    "name": "django-blog",
+    "transport": "rss",
+    "url": "https://example.com/django-blog.xml",
+    "bucket": "software-engineering",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
     "name": "google-online-security-blog",
     "transport": "rss",
     "url": "https://example.com/google-online-security.xml",
@@ -33,6 +43,26 @@
     "name": "cisa-kev-catalog",
     "transport": "json",
     "url": "https://example.com/known-exploited-vulnerabilities.json",
+    "bucket": "security",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
+    "name": "cisa-advisories",
+    "transport": "rss",
+    "url": "https://example.com/cisa-advisories.xml",
+    "bucket": "security",
+    "enabled": true,
+    "required_for_daily_run": false,
+    "failure_policy": "warn",
+    "max_items_per_source": 10
+  },
+  {
+    "name": "github-security-blog",
+    "transport": "rss",
+    "url": "https://example.com/github-security-blog.xml",
     "bucket": "security",
     "enabled": true,
     "required_for_daily_run": false,

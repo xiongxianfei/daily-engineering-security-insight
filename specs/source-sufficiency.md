@@ -5,6 +5,7 @@
 Define what counts as an adequate source program for the daily insight repository, how source sufficiency is measured, and how degraded source coverage must be surfaced to operators and digest consumers.
 
 This spec covers the source layer only. It does not redefine the digest content contract already covered by `specs/daily-digest.md`.
+The broader reviewed source universe is defined separately in `specs/source-catalog.md`; this spec stays focused on the runtime-approved subset that counts toward collection and sufficiency.
 
 Related plan: `docs/plans/2026-04-16-strengthen-insight-source-coverage.md`
 

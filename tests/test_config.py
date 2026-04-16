@@ -17,6 +17,9 @@ def test_load_source_configs_returns_typed_entries() -> None:
     assert [source.bucket for source in sources] == [
         "software-engineering",
         "software-engineering",
+        "software-engineering",
+        "security",
+        "security",
         "security",
         "security",
         "ai-for-security",
@@ -27,7 +30,10 @@ def test_load_source_configs_returns_typed_entries() -> None:
         "rss",
         "rss",
         "rss",
+        "rss",
         "json",
+        "rss",
+        "rss",
         "rss",
         "rss",
         "rss",
@@ -36,7 +42,10 @@ def test_load_source_configs_returns_typed_entries() -> None:
     assert [source.required_for_daily_run for source in sources] == [
         True,
         False,
+        False,
         True,
+        False,
+        False,
         False,
         False,
         False,
@@ -50,8 +59,13 @@ def test_load_source_configs_returns_typed_entries() -> None:
         "warn",
         "warn",
         "warn",
+        "warn",
+        "warn",
+        "warn",
     ]
-    assert [source.max_items_per_source for source in sources] == [10, 10, 10, 10, 5, 5, 5]
+    assert [
+        source.max_items_per_source for source in sources
+    ] == [10, 10, 10, 10, 10, 10, 10, 5, 5, 5]
     assert [source.name for source in required_source_configs(sources)] == [
         "python-insider",
         "google-online-security-blog",
@@ -133,8 +147,11 @@ def test_example_config_source_names_follow_reviewed_manifest_order() -> None:
     assert [source.name for source in sources] == [
         "python-insider",
         "github-changelog",
+        "django-blog",
         "google-online-security-blog",
         "cisa-kev-catalog",
+        "cisa-advisories",
+        "github-security-blog",
         "google-threat-intelligence",
         "openai-news",
         "deepmind-blog",

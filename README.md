@@ -58,6 +58,7 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
 3. Review the CLI surface and repo-local checks:
    ```bash
    uv run daily-insight --help
+   uv run daily-insight sources
    uv run daily-insight collect --dry-run --config configs/sources.example.json
    uv run daily-insight source-health --date 2026-04-15 --state-db state/daily_insight.db
    bash scripts/ci.sh
@@ -85,6 +86,7 @@ The goal is to make daily insight generation repeatable, reviewable, and safe:
 - `uv run daily-insight publish-site` publishes a reviewed digest into the generated `site/` browser root without serving raw `outputs/` directly
 - SQLite-backed operational state is recorded under `state/daily_insight.db`
 - `uv run daily-insight source-health --date YYYY-MM-DD` inspects the persisted per-bucket source-health state
+- `uv run daily-insight sources` summarizes the broader reviewed source catalog and keeps the runtime-approved subset boundary explicit
 - tests and schema checks keep the output stable
 
 ## Browser delivery
